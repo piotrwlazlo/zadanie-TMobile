@@ -1,0 +1,28 @@
+---
+#- hosts: aws_ec2
+#  become: yes
+#  become_user: root
+#  become_method: sudo
+#  roles:
+#    - alertmanager
+
+#- hosts: aws_ec2
+#  become: yes
+#  become_user: root
+#  become_method: sudo
+#  roles:
+#    - prometheus_node_exporter
+
+- hosts: aws_ec2
+  become: yes
+  become_user: root
+  become_method: sudo
+  roles:
+    - prometheus
+
+- hosts: aws_ec2
+  become: yes
+  become_user: root
+  become_method: sudo
+  roles:
+    - grafana

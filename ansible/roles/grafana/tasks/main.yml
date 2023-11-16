@@ -1,0 +1,66 @@
+- name: Install required packages
+  apt:
+    name:
+    - apt-transport-https
+    - software-properties-common
+    - wget
+    update_cache: yes
+    state: latest
+
+- name: Create /etc/apt/keyrings directory
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Add Grafana GPG key
+  apt_key:
+    url: https://apt.grafana.com/gpg.key
+    keyring: /etc/apt/keyrings/grafana.gpg
+
+- name: Add Grafana to the repository list
+  apt_repository:
+    repo: deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main
+    filename: grafana
+    update_cache: yes
+
+- name: Install Grafana
+  apt:
+    name: grafana
+    update_cache: yes
+    state: latest
+
+- name: "Grafana configuration file copy"
+  template:
+    src: "grafana.conf.j2"
+    dest: /etc/grafana/grafana.ini
+  notify: event_restart_grafana
+
+- name: Reload systemd manager configuration
+  systemd:
+    daemon_reload: yes
+
+- name: Start grafana-server service
+  systemd:
+    name: grafana-server
+    state: started
+
+- name: Check grafana-server service status
+  systemd:
+    name: grafana-server
+    state: started
+  register: grafana_service_status
+
+- name: Display grafana-server service status
+  debug:
+    msg: "{{ grafana_service_status }}"
+
+- name: Waiting for 5 seconds
+  pause:
+    seconds: 5
+
+- name: "Check if Grafana is accessible."
+  uri:
+    url: http://127.0.0.1:3000
+    method: GET
+    status_code: 200
